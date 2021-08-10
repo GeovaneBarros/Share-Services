@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
 class Contato(models.Model):
     celular = models.CharField(max_length=16)
     telefone = models.CharField(max_length=16, null=True)
@@ -27,59 +26,30 @@ class Endereco(models.Model):
         return ("Rua: {} Número: {} Bairro: {}".format(self.rua,self.bairro,self.cidade))
 
 
-class Prestador(models.Model):
+class Empresa(models.Model):
     nome = models.CharField(max_length=100)
-    profissao = models.CharField(max_length=100)
-    ponto = models.BooleanField()
-    ateCliente = models.BooleanField()
-    diferencial = models.CharField(max_length=256)
-    contato = models.OneToOneField(Contato, on_delete=models.CASCADE, null = True)
-    endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, null = True) 
+    ramo = models.CharField(max_length=100)
+    foto = models.ImageField(null=True, blank=True)
+    cnpj = models.CharField(max_length=20, blank=True, null=True)
+    contato = models.OneToOneField(Contato, on_delete=models.CASCADE, null = True, blank=True)
+    endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, null = True, blank=True) 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    premium = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Prestador de serviço'
-        verbose_name_plural = 'Prestadores de serviço'
+        verbose_name = 'Empresa'
+        verbose_name_plural = 'Empresas'
 
     def __str__(self):
-        return '{} {}'.format(self.profissao, self.nome)
+        return '{} {}'.format(self.ramo, self.nome)
 
-class Servico(models.Model):
-    nome = models.CharField(max_length = 64)
-    preco = models.DecimalField(max_digits=10, decimal_places=2)
-    descricao = models.CharField(max_length=256)
-    class Meta:
-        verbose_name = 'Serviço'
-        verbose_name_plural = 'Serviços'
-
-    def __str__(self):
-        return '{} {}'.format(self.nome, self.preco)
-
-class Cliente(models.Model):
-    nome = models.CharField(max_length = 64)
-    sobrenome = models.CharField(max_length = 64)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    contato = models.OneToOneField(Contato, on_delete=models.CASCADE, null = True)
-    endereco = models.OneToOneField(Endereco, on_delete=models.CASCADE, null = True)
+class Descricao(models.Model):
+    servicos = models.CharField(max_length=1024)
+    produtos = models.CharField(max_length=1024)
+    historia = models.CharField(max_length=512)
+    empresa = models.OneToOneField(Empresa, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = 'Cliente'
-        verbose_name_plural = 'Clientes'
-
-    def __str__(self):
-        return '{} {}'.format(self.nome, self.sobrenome)
-
-
-class Avaliacao(models.Model):
-    nota = models.PositiveSmallIntegerField(null=True)
-    comentario = models.CharField(max_length=256)
-    anonimo = models.BooleanField(default=False)
-    prestador = models.ForeignKey(Prestador, on_delete=models.CASCADE)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = 'Avaliação'
-        verbose_name_plural = 'Avaliações'
+        verbose_name = 'Descrição'
+        verbose_name_plural = 'Descrições'
     
-    def __str__(self):
-        return '{}: {}'.format(self.nota, self.comentario)

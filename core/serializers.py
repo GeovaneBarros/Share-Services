@@ -1,11 +1,7 @@
 from rest_framework import serializers
-from .models import Prestador, Contato, Endereco, Cliente, Avaliacao
+from .models import *
 from django.contrib.auth.models import User
 
-class PrestadorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Prestador
-        fields = ['nome', 'profissao', 'ponto', 'ateCliente', 'contato', 'endereco']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,6 +18,36 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class EmpresaSerializer(serializers.ModelSerializer):
+    usuario = UserSerializer(write_only = True)
+
+    class Meta:
+        model = Empresa
+        exclude = ['user']
+
+    def create(self, validated_data):
+        usuario = validated_data['usuario']
+        
+        email = usuario['email']
+        username = usuario['username']
+        password = usuario['password']
+        
+        user = User(
+            email=email,
+            username=username
+        )
+        user.set_password(password)
+        user.save()
+
+        empresa = Empresa(
+            nome = validated_data['nome'],
+            ramo = validated_data['ramo'],
+            user = user
+        )
+
+        empresa.save()
+        return empresa
+
 class ContatoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contato
@@ -32,12 +58,7 @@ class EnderecoSerializer(serializers.ModelSerializer):
         model = Endereco
         fields = '__all__'
 
-class ClienteSerializer(serializers.ModelSerializer):
+class DescricaoSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Cliente
-        fields = ['nome', 'sobrenome', 'contato', 'endereco']
-
-class AvaliacaoSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Avaliacao
-        fields = ['nota', 'comentario', 'prestador', 'anonimo']
+        model = Descricao
+        fields = '__all__'
